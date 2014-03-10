@@ -1,32 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿/**********************************************************************
+ * VLC for WinRT
+ **********************************************************************
+ * Copyright © 2013-2014 VideoLAN and Authors
+ *
+ * Licensed under GPLv2+ and MPLv2
+ * Refer to COPYING file of the official project for license
+ **********************************************************************/
+
+using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Media;
+using Windows.Storage;
 using Windows.System.Display;
 using Windows.UI.Core;
+using Windows.UI.Notifications;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using VLC_WINRT.Model;
 using VLC_WINRT.Utility.Commands;
+using VLC_WINRT.Utility.Commands.MusicPlayer;
+using VLC_WINRT.Utility.Helpers;
 using VLC_WINRT.Utility.IoC;
 using VLC_WINRT.Utility.Services.RunTime;
-using VLC_WINRT.ViewModels.MainPage;
-using Windows.UI.Popups;
-using VLC_WINRT.Common;
-using VLC_WINRT.Views;
-using VLC_WINRT.Utility.Commands.MusicPlayer;
 
-namespace VLC_WINRT.ViewModels.PlayMusic
+namespace VLC_WINRT.ViewModels.MainPage.PlayMusic
 {
     public class MusicPlayerViewModel : NavigateableViewModel, IDisposable
     {
         private readonly DisplayRequest _displayAlwaysOnRequest;
-        private readonly DispatcherTimer _fiveSecondTimer = new DispatcherTimer();
         private readonly HistoryService _historyService;
         private readonly DispatcherTimer _sliderPositionTimer = new DispatcherTimer();
         private TimeSpan _elapsedTime = TimeSpan.Zero;
@@ -34,19 +36,19 @@ namespace VLC_WINRT.ViewModels.PlayMusic
         private StopVideoCommand _goBackCommand;
         private bool _isPlaying;
         private string _mrl;
-        private PlayPauseCommand _playOrPause;
+        private MusicPlayOrPauseCommand _playOrPause;
         private ActionCommand _skipAhead;
         private ActionCommand _skipBack;
         private PlayNextCommand _playNext;
         private PlayPreviousCommand _playPrevious;
         private TimeSpan _timeTotal = TimeSpan.Zero;
         private string _title;
-        private VLC_WINRT.ViewModels.MainPage.MusicLibraryViewModel.ArtistItemViewModel _artist;
+        private MusicLibraryViewModel.ArtistItemViewModel _artist;
         private MediaPlayerService _vlcPlayerService;
         private TrackCollectionViewModel _trackCollection;
         public MusicPlayerViewModel()
         {
-            _playOrPause = new PlayPauseCommand();
+            _playOrPause = new MusicPlayOrPauseCommand();
             _historyService = IoC.GetInstance<HistoryService>();
             _goBackCommand = new StopVideoCommand();
             _displayAlwaysOnRequest = new DisplayRequest();
@@ -54,58 +56,48 @@ namespace VLC_WINRT.ViewModels.PlayMusic
             _sliderPositionTimer.Tick += FirePositionUpdate;
             _sliderPositionTimer.Interval = TimeSpan.FromMilliseconds(16);
 
-            _fiveSecondTimer.Tick += UpdateDate;
-            _fiveSecondTimer.Interval = TimeSpan.FromSeconds(5);
-
             _vlcPlayerService = IoC.GetInstance<MediaPlayerService>();
             _vlcPlayerService.StatusChanged += PlayerStateChanged;
             _vlcPlayerService.MediaEnded += _vlcPlayerService_MediaEnded;
             _skipAhead = new ActionCommand(() => _vlcPlayerService.SkipAhead());
             _skipBack = new ActionCommand(() => _vlcPlayerService.SkipBack());
-            _playNext = new Utility.Commands.MusicPlayer.PlayNextCommand();
-            _playPrevious = new Utility.Commands.MusicPlayer.PlayPreviousCommand();
+            _playNext = new PlayNextCommand();
+            _playPrevious = new PlayPreviousCommand();
             _trackCollection = new TrackCollectionViewModel();
+        }
 
-
+        void RegisterWindows8Events()
+        {
             // register the windows 8 overlay media control events
             MediaControl.StopPressed += MediaControl_StopPressed;
             MediaControl.PlayPressed += MediaControl_PlayPressed;
             MediaControl.PlayPauseTogglePressed += MediaControl_PlayPauseTogglePressed;
             MediaControl.PausePressed += MediaControl_PausePressed;
+            MediaControl.IsPlaying = false;
         }
-
         void MediaControl_PreviousTrackPressed(object sender, object e)
         {
-            PlayPrevious();
+            App.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, PlayPrevious);
         }
 
         void MediaControl_NextTrackPressed(object sender, object e)
         {
-            PlayNext();
+            App.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, PlayNext);
         }
         private void MediaControl_PausePressed(object sender, object e)
         {
-            App.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            {
-                _vlcPlayerService.Pause();
-            });
+            App.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, Pause);
         }
 
         private void MediaControl_PlayPauseTogglePressed(object sender, object e)
         {
             if (MediaControl.IsPlaying)
             {
-                App.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                {
-                    _vlcPlayerService.Pause();
-                });
+                App.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, Pause);
             }
             else
             {
-                App.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                {
-                    _vlcPlayerService.Play();
-                });
+                App.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, Resume);
             }
         }
 
@@ -114,6 +106,7 @@ namespace VLC_WINRT.ViewModels.PlayMusic
             App.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 _vlcPlayerService.Play();
+                MediaControl.IsPlaying = true;
             });
         }
 
@@ -122,6 +115,7 @@ namespace VLC_WINRT.ViewModels.PlayMusic
             App.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 _vlcPlayerService.Stop();
+                MediaControl.IsPlaying = false;
             });
         }
 
@@ -132,41 +126,77 @@ namespace VLC_WINRT.ViewModels.PlayMusic
                 return _trackCollection;
             }
         }
-        void _vlcPlayerService_MediaEnded(object sender, libVLCX.Player e)
-        {
-            PlayNext();
-        }
 
-        public void PlayNext()
+        void _vlcPlayerService_MediaEnded(object sender, libVLCX.Player e)
         {
             App.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                if (TrackCollection.CanGoNext)
+                if (IsPlaying && TrackCollection.TrackCollection != null && TrackCollection.TrackCollection.Any())
                 {
-                    TrackCollection.CurrentTrack++;
-
-                    Play();
+                    if (TrackCollection.TrackCollection[TrackCollection.CurrentTrack] ==
+                        TrackCollection.TrackCollection.Last())
+                    {
+                        // Playlist is finished
+                        TrackCollection.IsRunning = false;
+                    }
+                    else
+                    {
+                        PlayNext();
+                    }
                 }
-                else
-                    MediaControl.IsPlaying = false;
             });
         }
+
+        public void Resume()
+        {
+            _vlcPlayerService.Play();
+            MediaControl.IsPlaying = true;
+        }
+        public void Stop()
+        {
+            if (MediaControl.IsPlaying)
+                _vlcPlayerService.Stop();
+        }
+        public void PlayNext()
+        {
+            TrackCollection.IsNextPossible();
+            TrackCollection.IsPreviousPossible();
+            if (TrackCollection.CanGoNext)
+            {
+                TrackCollection.CurrentTrack++;
+                Play();
+            }
+            else
+            {
+                TileUpdateManager.CreateTileUpdaterForApplication().Clear();
+                MediaControl.IsPlaying = false;
+            }
+        }
+
         public void PlayPrevious()
         {
+            TrackCollection.IsNextPossible();
+            TrackCollection.IsPreviousPossible();
             if (TrackCollection.CanGoPrevious)
             {
                 TrackCollection.CurrentTrack--;
                 Play();
             }
             else
+            {
+                TileUpdateManager.CreateTileUpdaterForApplication().Clear();
                 MediaControl.IsPlaying = false;
+                MediaControl.PreviousTrackPressed -= MediaControl_PreviousTrackPressed;
+            }
         }
 
         public async void Play()
         {
+            TrackCollection.IsRunning = true;
+            Stop();
             var trackItem = TrackCollection.TrackCollection[TrackCollection.CurrentTrack];
 
-            var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(trackItem.Path);
+            var file = await StorageFile.GetFileFromPathAsync(trackItem.Path);
             var history = new HistoryService();
             //string token = history.Add(file, true);
             string token = history.Add(file);
@@ -177,19 +207,76 @@ namespace VLC_WINRT.ViewModels.PlayMusic
 
             // Setting the info for windows 8 controls
             MediaControl.IsPlaying = true;
-            MediaControl.ArtistName = trackItem.ArtistName;
-            MediaControl.TrackName = trackItem.Name;
-            //MediaControl.AlbumArt = new Uri(Locator.MusicPlayerVM.Artist.CurrentAlbumItem.Picture, UriKind.Absolute);
+            MediaControl.ArtistName = trackItem.ArtistName ?? "Unknown Artist";
+            MediaControl.TrackName = trackItem.Name ?? "Unknown Track";
+            try
+            {
+                MediaControl.AlbumArt = new Uri(Locator.MusicPlayerVM.Artist.CurrentAlbumItem.Picture);
+            }
+            catch
+            {
+                // If album cover is from the internet then it's impossible to pass it to the MediaControl
+            }
+
+            TrackCollection.IsNextPossible();
+            TrackCollection.IsPreviousPossible();
+
             if (TrackCollection.CanGoNext)
                 MediaControl.NextTrackPressed += MediaControl_NextTrackPressed;
             else
                 MediaControl.NextTrackPressed -= MediaControl_NextTrackPressed;
-            
-            if(TrackCollection.CanGoPrevious)
+
+            if (TrackCollection.CanGoPrevious)
                 MediaControl.PreviousTrackPressed += MediaControl_PreviousTrackPressed;
             else
                 MediaControl.PreviousTrackPressed -= MediaControl_PreviousTrackPressed;
         }
+
+        public async void PlayFromExplorer(StorageFile file)
+        {
+            TrackCollection.IsRunning = true;
+            Stop();
+            var trackItem = TrackCollection.TrackCollection[TrackCollection.CurrentTrack];
+
+            var history = new HistoryService();
+            string token = history.Add(file);
+
+            Debug.WriteLine("Opening file: " + file.Path);
+
+            SetActiveMusicInfo(token, trackItem);
+
+            // Setting the info for windows 8 controls
+            MediaControl.IsPlaying = true;
+            MediaControl.ArtistName = trackItem.ArtistName;
+            MediaControl.TrackName = trackItem.Name;
+            try
+            {
+                MediaControl.AlbumArt = new Uri(Locator.MusicPlayerVM.Artist.CurrentAlbumItem.Picture);
+            }
+            catch
+            {
+                // If album cover is from the internet then it's impossible to pass it to the MediaControl
+            }
+
+            TrackCollection.IsNextPossible();
+            TrackCollection.IsPreviousPossible();
+
+            if (TrackCollection.CanGoNext)
+                MediaControl.NextTrackPressed += MediaControl_NextTrackPressed;
+            else
+                MediaControl.NextTrackPressed -= MediaControl_NextTrackPressed;
+
+            if (TrackCollection.CanGoPrevious)
+                MediaControl.PreviousTrackPressed += MediaControl_PreviousTrackPressed;
+            else
+                MediaControl.PreviousTrackPressed -= MediaControl_PreviousTrackPressed;
+        }
+        public void Pause()
+        {
+            _vlcPlayerService.Pause();
+            MediaControl.IsPlaying = false;
+        }
+
         public double PositionInSeconds
         {
             get
@@ -203,12 +290,29 @@ namespace VLC_WINRT.ViewModels.PlayMusic
             set { _vlcPlayerService.Seek((float)(value / TimeTotal.TotalSeconds)); }
         }
 
+        public double Position
+        {
+            get
+            {
+                if (_vlcPlayerService != null && _vlcPlayerService.CurrentState == MediaPlayerService.MediaPlayerState.Playing)
+                {
+                    return _vlcPlayerService.GetPosition().Result * 1000;
+                }
+                return 0.0d;
+                
+            }
+            set
+            {
+                _vlcPlayerService.Seek((float)value / 1000);
+            }
+        }
+
         public string Now
         {
             get { return DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern); }
         }
 
-        public PlayPauseCommand PlayOrPause
+        public MusicPlayOrPauseCommand PlayOrPause
         {
             get { return _playOrPause; }
             set { SetProperty(ref _playOrPause, value); }
@@ -260,7 +364,7 @@ namespace VLC_WINRT.ViewModels.PlayMusic
             private set { SetProperty(ref _title, value); }
         }
 
-        public VLC_WINRT.ViewModels.MainPage.MusicLibraryViewModel.ArtistItemViewModel Artist
+        public MusicLibraryViewModel.ArtistItemViewModel Artist
         {
             get { return _artist; }
             private set { SetProperty(ref _artist, value); }
@@ -309,6 +413,7 @@ namespace VLC_WINRT.ViewModels.PlayMusic
             if (e == MediaPlayerService.MediaPlayerState.Playing)
             {
                 IsPlaying = true;
+                RegisterWindows8Events();
             }
             else
             {
@@ -326,18 +431,17 @@ namespace VLC_WINRT.ViewModels.PlayMusic
             _fileToken = token;
             _mrl = "winrt://" + token;
             Title = track.Name;
-            Artist = Locator.MusicLibraryVM.Artist.FirstOrDefault(x=>x.Name == track.ArtistName);
-            Artist.CurrentAlbumIndex = _artist.Albums.IndexOf(_artist.Albums.FirstOrDefault(x => x.Name == track.AlbumName));
+            Artist = Locator.MusicLibraryVM.Artist.FirstOrDefault(x => x.Name == track.ArtistName);
+            if (Artist != null)
+                Artist.CurrentAlbumIndex = _artist.Albums.IndexOf(_artist.Albums.FirstOrDefault(x => x.Name == track.AlbumName));
             _vlcPlayerService.Open(_mrl);
-            App.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>_fiveSecondTimer.Start());
             OnPropertyChanged("TimeTotal");
-
+            UpdateTileHelper.UpdateMediumTileWithMusicInfo();
             _vlcPlayerService.Play();
         }
 
         public override void OnNavigatedFrom()
         {
-            _fiveSecondTimer.Stop();
             _sliderPositionTimer.Stop();
             _vlcPlayerService.Stop();
         }
@@ -373,7 +477,6 @@ namespace VLC_WINRT.ViewModels.PlayMusic
             }
         }
 
-
         private async Task UpdatePosition(object sender, object e)
         {
             OnPropertyChanged("PositionInSeconds");
@@ -384,7 +487,14 @@ namespace VLC_WINRT.ViewModels.PlayMusic
                 TimeTotal = TimeSpan.FromMilliseconds(timeInMilliseconds);
             }
 
+            OnPropertyChanged("Position");
             ElapsedTime = TimeSpan.FromSeconds(PositionInSeconds);
+        }
+
+        public async Task CleanViewModel()
+        {
+            IsPlaying = false;
+            Pause();
         }
     }
 }

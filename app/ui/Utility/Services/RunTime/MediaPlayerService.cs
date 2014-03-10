@@ -1,8 +1,20 @@
-﻿using System;
+﻿/**********************************************************************
+ * VLC for WinRT
+ **********************************************************************
+ * Copyright © 2013-2014 VideoLAN and Authors
+ *
+ * Licensed under GPLv2+ and MPLv2
+ * Refer to COPYING file of the official project for license
+ **********************************************************************/
+
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
 using libVLCX;
+
+
 
 namespace VLC_WINRT.Utility.Services.RunTime
 {
@@ -22,6 +34,7 @@ namespace VLC_WINRT.Utility.Services.RunTime
         public MediaPlayerState CurrentState;
         private Task _vlcInitializeTask;
         private Player _vlcPlayer;
+
 
         public MediaPlayerService()
         {
@@ -46,6 +59,11 @@ namespace VLC_WINRT.Utility.Services.RunTime
 
         public void Stop()
         {
+            //TODO: fix this work around.
+            if (CurrentState == MediaPlayerState.Paused)
+            {
+                Play();
+            }
             DoVLCSafeAction(() =>
             {
                 _vlcPlayer.Stop();
@@ -122,8 +140,8 @@ namespace VLC_WINRT.Utility.Services.RunTime
         {
             double position = await GetPosition();
             double length = await GetLength();
-            TimeSpan seekTo = TimeSpan.FromMilliseconds(position*length) + relativeTimeSpan;
-            double relativePosition = seekTo.TotalMilliseconds/length;
+            TimeSpan seekTo = TimeSpan.FromMilliseconds(position * length) + relativeTimeSpan;
+            double relativePosition = seekTo.TotalMilliseconds / length;
             if (relativePosition < 0.0f)
             {
                 relativePosition = 0.0f;
@@ -132,7 +150,7 @@ namespace VLC_WINRT.Utility.Services.RunTime
             {
                 relativePosition = 1.0f;
             }
-            Seek((float) relativePosition);
+            Seek((float)relativePosition);
         }
 
         public void Close()
@@ -202,6 +220,83 @@ namespace VLC_WINRT.Utility.Services.RunTime
                 length = _vlcPlayer.GetLength();
             }
             return length;
+        }
+
+        public async Task SetSizeVideoPlayer(uint x, uint y)
+        {
+            if (_vlcPlayer == null || _vlcInitializeTask == null)
+                return;
+            await _vlcInitializeTask;
+
+            lock (_controlLock)
+            {
+                _vlcPlayer.UpdateSize(x, y);
+            }
+        }
+
+        public async Task<int> GetSubtitleCount()
+        {
+            if (_vlcPlayer == null || _vlcInitializeTask == null)
+                return 0;
+            await _vlcInitializeTask;
+            lock (_controlLock)
+            {
+                return _vlcPlayer.GetSubtitleCount();
+            }
+        }
+
+        public async Task<int> GetAudioTrackCount()
+        {
+            if (_vlcPlayer == null || _vlcInitializeTask == null)
+                return 0;
+            await _vlcInitializeTask;
+            lock (_controlLock)
+            {
+                return _vlcPlayer.GetAudioTracksCount();
+            }
+        }
+
+        public async Task<int> GetSubtitleDescription(IDictionary<int, string> subtitles)
+        {
+            if (_vlcPlayer == null || _vlcInitializeTask == null)
+                return 0;
+            await _vlcInitializeTask;
+            lock (_controlLock)
+            {
+                return _vlcPlayer.GetSubtitleDescription(subtitles);
+            }
+        }
+        public async Task<int> GetAudioTrackDescription(IDictionary<int, string> audioTracks)
+        {
+            if (_vlcPlayer == null || _vlcInitializeTask == null)
+                return 0;
+            await _vlcInitializeTask;
+            lock (_controlLock)
+            {
+                return _vlcPlayer.GetAudioTracksDescription(audioTracks);
+            }
+        }
+        
+        public async Task SetSubtitleTrack(int track)
+        {
+            if (_vlcPlayer == null || _vlcInitializeTask == null)
+                return;
+            await _vlcInitializeTask;
+            lock (_controlLock)
+            {
+                _vlcPlayer.SetSubtitleTrack(track);
+            }
+        }
+
+        public async Task SetAudioTrack(int track)
+        {
+            if (_vlcPlayer == null || _vlcInitializeTask == null)
+                return;
+            await _vlcInitializeTask;
+            lock (_controlLock)
+            {
+                _vlcPlayer.SetAudioTrack(track);
+            }
         }
     }
 }

@@ -1,19 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
+﻿/**********************************************************************
+ * VLC for WinRT
+ **********************************************************************
+ * Copyright © 2013-2014 VideoLAN and Authors
+ *
+ * Licensed under GPLv2+ and MPLv2
+ * Refer to COPYING file of the official project for license
+ **********************************************************************/
+
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Media.Animation;
 
 // Pour en savoir plus sur le modèle d'élément Contrôle utilisateur, consultez la page http://go.microsoft.com/fwlink/?LinkId=234236
+using VLC_WINRT.Utility.Helpers;
+using VLC_WINRT.Utility.Services.RunTime;
 
 namespace VLC_WINRT.Views.Controls
 {
@@ -23,27 +23,19 @@ namespace VLC_WINRT.Views.Controls
         {
             this.InitializeComponent();
         }
-        private void PreviousButton_Click(object sender, RoutedEventArgs e)
+        private async void InformationsCurrentPlayingGrid_Tapped(object sender, TappedRoutedEventArgs e)
         {
-        }
-
-        private void NextButton_Click(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void PauseButton_Click(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void PlayButton_Click(object sender, RoutedEventArgs e)
-        {
-        }
-        private async void PlayerAppBarSection_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-        }
-
-        private void UserControl_SizeChanged_1(object sender, SizeChangedEventArgs e)
-        {
+            var frame = App.ApplicationFrame;
+            var page = frame.Content as Views.MainPage;
+            if (page != null)
+            {
+                var sB = page.Resources["FadeOutPage"] as Storyboard;
+                if (sB != null)
+                {
+                    await sB.BeginAsync();
+                    NavigationService.NavigateTo(typeof(PlayMusic));
+                }
+            }
         }
     }
 }

@@ -1,4 +1,13 @@
-﻿using System;
+﻿/**********************************************************************
+ * VLC for WinRT
+ **********************************************************************
+ * Copyright © 2013-2014 VideoLAN and Authors
+ *
+ * Licensed under GPLv2+ and MPLv2
+ * Refer to COPYING file of the official project for license
+ **********************************************************************/
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
@@ -6,12 +15,14 @@ using Windows.Storage;
 using VLC_WINRT.Common;
 using VLC_WINRT.Model;
 using VLC_WINRT.Utility.Commands;
+using VLC_WINRT.Utility.Commands.MainPage;
 
 namespace VLC_WINRT.ViewModels.MainPage
 {
     public class MainPageViewModel : NavigateableViewModel
     {
         private ObservableCollection<Panel> _panels = new ObservableCollection<Panel>();
+        private ObservableCollection<Panel> _secondaryPanels = new ObservableCollection<Panel>(); 
         private ObservableCollection<VideoLibraryViewModel> _dlnaVMs =
             new ObservableCollection<VideoLibraryViewModel>();
 
@@ -28,11 +39,12 @@ namespace VLC_WINRT.ViewModels.MainPage
         private ActionCommand _showAppBarCommand;
         private ActionCommand _toggleNetworkAppBarCommand;
         private VideoLibraryViewModel _videoVM;
+        private GoToPanelCommand _goToPanelCommand;
 
         public MainPageViewModel()
         {
             VideoVM = new VideoLibraryViewModel(KnownVLCLocation.VideosLibrary);
-            MusicLibraryVm = new MusicLibraryViewModel();
+            MusicLibraryVm = Locator.MusicLibraryVM;
             ExternalStorageVM = new ExternalStorageViewModel();
 
             Task<IReadOnlyList<StorageFolder>> dlnaFolders = KnownVLCLocation.MediaServers.GetFoldersAsync().AsTask();
@@ -58,8 +70,17 @@ namespace VLC_WINRT.ViewModels.MainPage
             Panels.Add(new Panel("home", 0, 1));
             Panels.Add(new Panel("videos", 1, 0.4));
             Panels.Add(new Panel("music", 2, 0.4));
-            Panels.Add(new Panel("removable storage", 3, 0.4));
-            Panels.Add(new Panel("dlna", 4, 0.4));
+            
+            SecondaryPanels.Add(new Panel("external storage", 3, 0.4));
+            SecondaryPanels.Add(new Panel("media servers", 4, 0.4));
+
+            _goToPanelCommand = new GoToPanelCommand();
+        }
+
+        public GoToPanelCommand GoToPanel
+        {
+            get { return _goToPanelCommand; }
+            set { SetProperty(ref _goToPanelCommand, value); }
         }
 
         public ObservableCollection<Panel> Panels
@@ -69,7 +90,14 @@ namespace VLC_WINRT.ViewModels.MainPage
             {
                 SetProperty(ref _panels, value);
             }
-        } 
+        }
+
+        public ObservableCollection<Panel> SecondaryPanels
+        {
+            get { return _secondaryPanels; }
+            set { SetProperty(ref _secondaryPanels, value); }
+        }
+        
         public VideoLibraryViewModel VideoVM
         {
             get { return _videoVM; }

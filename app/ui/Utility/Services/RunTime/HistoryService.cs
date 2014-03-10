@@ -1,4 +1,13 @@
-﻿using System;
+﻿/**********************************************************************
+ * VLC for WinRT
+ **********************************************************************
+ * Copyright © 2013-2014 VideoLAN and Authors
+ *
+ * Licensed under GPLv2+ and MPLv2
+ * Refer to COPYING file of the official project for license
+ **********************************************************************/
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -57,13 +66,15 @@ namespace VLC_WINRT.Utility.Services.RunTime
 
         public string Add(StorageFile file)
         {
+            bool isAudio = file.ContentType.Contains("audio");
+
             string token;
             MediaHistory previouslySavedMedia = _histories.FirstOrDefault(h => h.Filename == file.Name);
 
             if (previouslySavedMedia == null)
             {
                 string mru = StorageApplicationPermissions.FutureAccessList.Add(file);
-                MediaHistory history = CreateHistory(file, mru);
+                MediaHistory history = CreateHistory(file, mru, isAudio);
                 _histories.Insert(0, history);
                 token = history.Token;
             }
@@ -110,7 +121,10 @@ namespace VLC_WINRT.Utility.Services.RunTime
         {
             return index < _histories.Count ? _histories[index].Token : null;
         }
-
+        public bool IsAudioAtPosition(int index)
+        {
+            return index < _histories.Count ? _histories[index].IsAudio : false;
+        }
         public IAsyncOperation<StorageFile> RetrieveFile(string token)
         {
             if (string.IsNullOrEmpty(token)) return null;
@@ -172,14 +186,15 @@ namespace VLC_WINRT.Utility.Services.RunTime
             PublishUpdate();
         }
 
-        private MediaHistory CreateHistory(IStorageItem item, string token)
+        private MediaHistory CreateHistory(IStorageItem item, string token, bool isAudio)
         {
             var history = new MediaHistory
             {
                 Token = token,
                 Filename = item.Name,
                 LastPlayed = DateTime.Now,
-                TotalWatchedMilliseconds = 0
+                TotalWatchedMilliseconds = 0,
+                IsAudio = isAudio
             };
 
             return history;

@@ -1,22 +1,36 @@
-﻿using System;
+﻿/**********************************************************************
+ * VLC for WinRT
+ **********************************************************************
+ * Copyright © 2013-2014 VideoLAN and Authors
+ *
+ * Licensed under GPLv2+ and MPLv2
+ * Refer to COPYING file of the official project for license
+ **********************************************************************/
+
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using Windows.System.Display;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using libVLCX;
+using VLC_WINRT.Common;
 using VLC_WINRT.Model;
 using VLC_WINRT.Utility.Commands;
+using VLC_WINRT.Utility.Commands.VideoPlayer;
 using VLC_WINRT.Utility.IoC;
 using VLC_WINRT.Utility.Services.RunTime;
+using VLC_WINRT.ViewModels.MainPage;
+using VLC_WINRT.Views.Controls.MainPage;
 
 namespace VLC_WINRT.ViewModels.PlayVideo
 {
     public class PlayVideoViewModel : NavigateableViewModel, IDisposable
     {
         private readonly DisplayRequest _displayAlwaysOnRequest;
-        private readonly DispatcherTimer _fiveSecondTimer = new DispatcherTimer();
         private readonly HistoryService _historyService;
         private readonly DispatcherTimer _sliderPositionTimer = new DispatcherTimer();
         private Subtitle _currentSubtitle;
@@ -33,6 +47,15 @@ namespace VLC_WINRT.ViewModels.PlayVideo
         private string _title;
         private MediaPlayerService _vlcPlayerService;
         private MouseService _mouseService;
+        private MediaViewModel _currentVideo;
+
+        private int _subtitlesCount = 0;
+        private IDictionary<int, string> _subtitlesTracks;
+        private SetSubtitleTrackCommand _setSubTitlesCommand;
+
+        private int _audioTracksCount = 0;
+        private IDictionary<int, string> _audioTracks;
+        private SetAudioTrackCommand _setAudioTrackCommand;
 
         public PlayVideoViewModel()
         {
@@ -41,12 +64,10 @@ namespace VLC_WINRT.ViewModels.PlayVideo
             _goBackCommand = new StopVideoCommand();
             _displayAlwaysOnRequest = new DisplayRequest();
             _subtitles = new ObservableCollection<Subtitle>();
-
+            _subtitlesTracks = new Dictionary<int, string>();
+            _audioTracks = new Dictionary<int, string>();
             _sliderPositionTimer.Tick += FirePositionUpdate;
             _sliderPositionTimer.Interval = TimeSpan.FromMilliseconds(16);
-
-            _fiveSecondTimer.Tick += UpdateDate;
-            _fiveSecondTimer.Interval = TimeSpan.FromSeconds(5);
 
             _vlcPlayerService = IoC.GetInstance<MediaPlayerService>();
             _vlcPlayerService.StatusChanged += PlayerStateChanged;
@@ -55,19 +76,28 @@ namespace VLC_WINRT.ViewModels.PlayVideo
 
             _skipAhead = new ActionCommand(() => _vlcPlayerService.SkipAhead());
             _skipBack = new ActionCommand(() => _vlcPlayerService.SkipBack());
+            _setSubTitlesCommand = new SetSubtitleTrackCommand();
+            _setAudioTrackCommand = new SetAudioTrackCommand();
+        }
+
+        public MediaViewModel CurrentVideo
+        {
+            get { return _currentVideo; }
+            set { SetProperty(ref _currentVideo, value); }
         }
 
         public double PositionInSeconds
         {
             get
             {
-                if (_vlcPlayerService != null && _vlcPlayerService.CurrentState == MediaPlayerService.MediaPlayerState.Playing)
+                if (_vlcPlayerService != null &&
+                    _vlcPlayerService.CurrentState == MediaPlayerService.MediaPlayerState.Playing)
                 {
-                    return _vlcPlayerService.GetPosition().Result*TimeTotal.TotalSeconds;
+                    return _vlcPlayerService.GetPosition().Result * TimeTotal.TotalSeconds;
                 }
                 return 0.0d;
             }
-            set { _vlcPlayerService.Seek((float) (value/TimeTotal.TotalSeconds)); }
+            set { _vlcPlayerService.Seek((float)(value / TimeTotal.TotalSeconds)); }
         }
 
         public string Now
@@ -150,6 +180,42 @@ namespace VLC_WINRT.ViewModels.PlayVideo
             private set { SetProperty(ref _subtitles, value); }
         }
 
+        public int SubtitlesCount
+        {
+            get { return _subtitlesCount; }
+            set { SetProperty(ref _subtitlesCount, value); }
+        }
+
+        public IDictionary<int, string> SubtitlesTracks
+        {
+            get { return _subtitlesTracks; }
+            set { SetProperty(ref _subtitlesTracks, value); }
+        }
+
+        public SetSubtitleTrackCommand SetSubtitleTrackCommand
+        {
+            get { return _setSubTitlesCommand; }
+            set { SetProperty(ref _setSubTitlesCommand, value); }
+        }
+
+        public int AudioTracksCount
+        {
+            get { return _audioTracksCount; }
+            set { SetProperty(ref _audioTracksCount, value); }
+        }
+
+        public IDictionary<int, string> AudioTracks
+        {
+            get { return _audioTracks; }
+            set { SetProperty(ref _audioTracks, value); }
+        }
+
+        public SetAudioTrackCommand SetAudioTrackCommand
+        {
+            get { return _setAudioTrackCommand; }
+            set { SetProperty(ref _setAudioTrackCommand, value); }
+        }
+
         public void Dispose()
         {
             if (_vlcPlayerService != null)
@@ -183,36 +249,54 @@ namespace VLC_WINRT.ViewModels.PlayVideo
 
         public void RegisterPanel()
         {
-        
+
         }
 
-        public void SetActiveVideoInfo(string token, string title)
+        public async void SetActiveVideoInfo(string token, string title)
         {
+            // Pause the music viewmodel
+            Locator.MusicPlayerVM.CleanViewModel();
+
             _fileToken = token;
             _mrl = "winrt://" + token;
             Title = title;
 
             _vlcPlayerService.Open(_mrl);
-            _fiveSecondTimer.Start();
             OnPropertyChanged("TimeTotal");
 
             _vlcPlayerService.Play();
+            await Task.Delay(300);
+            SubtitlesCount = await _vlcPlayerService.GetSubtitleCount();
+            AudioTracksCount = await _vlcPlayerService.GetAudioTrackCount();
+            await _vlcPlayerService.GetSubtitleDescription(SubtitlesTracks);
+            await _vlcPlayerService.GetAudioTrackDescription(AudioTracks);
+            _vlcPlayerService.MediaEnded += VlcPlayerServiceOnMediaEnded;
+        }
+
+        private void VlcPlayerServiceOnMediaEnded(object sender, Player player)
+        {
+            App.RootPage.MainFrame.GoBack();
         }
 
         public void SetActiveVideoInfo(string mrl)
         {
+            // Pause the music viewmodel
+            Locator.MusicPlayerVM.CleanViewModel();
+
             _fileToken = null;
             _mrl = mrl;
+            _vlcPlayerService.Open(_mrl);
+            _vlcPlayerService.Play();
         }
 
         public override void OnNavigatedFrom()
         {
-            _fiveSecondTimer.Stop();
+            UpdateDate();
             _sliderPositionTimer.Stop();
             _vlcPlayerService.Stop();
         }
 
-        private void UpdateDate(object sender, object e)
+        private void UpdateDate()
         {
             if (!string.IsNullOrEmpty(_fileToken))
             {
@@ -258,5 +342,21 @@ namespace VLC_WINRT.ViewModels.PlayVideo
 
             ElapsedTime = TimeSpan.FromSeconds(PositionInSeconds);
         }
+
+        public async Task SetSizeVideoPlayer(uint x, uint y)
+        {
+            _vlcPlayerService.SetSizeVideoPlayer(x, y);
+        }
+
+        public async Task SetSubtitleTrack(int i)
+        {
+            _vlcPlayerService.SetSubtitleTrack(i);
+        }
+        public async Task SetAudioTrack(int i)
+        {
+            _vlcPlayerService.SetAudioTrack(i);
+        }
+
+
     }
 }

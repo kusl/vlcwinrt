@@ -85,18 +85,26 @@
     <Compile Include="Common\AlwaysExecutableCommand.cs" />
     <Compile Include="Common\DispatchHelper.cs" />
     <Compile Include="Common\KnownVLCLocation.cs" />
+    <Compile Include="Model\BackItem.cs" />
     <Compile Include="Model\MediaHistory.cs" />
     <Compile Include="Model\Panel.cs" />
     <Compile Include="Model\Subtitle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\BindableBase.cs" />
     <Compile Include="Utility\Commands\ClearHistoryCommand.cs" />
+    <Compile Include="Utility\Commands\MainPageCommands\GoToPanelCommand.cs" />
+    <Compile Include="Utility\Commands\MusicPlayer\FavoriteAlbumCommand.cs" />
+    <Compile Include="Utility\Commands\MusicPlayer\FavoriteTrackCommand.cs" />
+    <Compile Include="Utility\Commands\MusicPlayer\MusicPlayOrPauseCommand.cs" />
     <Compile Include="Utility\Commands\MusicPlayer\PlayNextCommand.cs" />
     <Compile Include="Utility\Commands\MusicPlayer\PlayPreviousCommand.cs" />
     <Compile Include="Utility\Commands\PlayAlbumCommand.cs" />
     <Compile Include="Utility\Commands\PlayPauseCommand.cs" />
     <Compile Include="Utility\Commands\PlayTrackComand.cs" />
     <Compile Include="Utility\Commands\StopVideoCommand.cs" />
+    <Compile Include="Utility\Commands\VideoPlayer\FavoriteVideoCommand.cs" />
+    <Compile Include="Utility\Commands\VideoPlayer\SetAudioTrackCommand.cs" />
+    <Compile Include="Utility\Commands\VideoPlayer\SetSubtitleTrackCommand.cs" />
     <Compile Include="Utility\Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Utility\Converters\BooleanNegationConverter.cs" />
     <Compile Include="Common\LayoutAwarePage.cs" />
@@ -104,18 +112,44 @@
     <Compile Include="Common\SuspensionManager.cs" />
     <Compile Include="Utility\Commands\PickVideoCommand.cs" />
     <Compile Include="Utility\Commands\OpenFileCommand.cs" />
+    <Compile Include="Utility\Converters\CountToVisibilityConverter.cs" />
+    <Compile Include="Utility\Converters\EmptyTimeSpanToVisibilityConverter.cs" />
     <Compile Include="Utility\Converters\NegatedBooleanToVisibilityConverter.cs" />
+    <Compile Include="Utility\Converters\NegatedCountToVisibilityConverter.cs" />
     <Compile Include="Utility\Converters\NullToVisibilityConverter.cs" />
     <Compile Include="Utility\Converters\SecondsStringConverter.cs" />
     <Compile Include="Utility\Converters\StringToUpperConverter.cs" />
     <Compile Include="Utility\Converters\TimeSpanSecondsDoubleConverter.cs" />
     <Compile Include="Utility\Converters\TimespanShortStringConverter.cs" />
     <Compile Include="Utility\DataTemplateSelectors\MediaItemDataTemplateSelector.cs" />
+    <Compile Include="Utility\Helpers\AwaitableUI\BitmapImageExtensions.cs" />
+    <Compile Include="Utility\Helpers\AwaitableUI\ControlExtensions.cs" />
+    <Compile Include="Utility\Helpers\AwaitableUI\EventAsync.cs" />
+    <Compile Include="Utility\Helpers\AwaitableUI\FrameworkElementExtensions.cs" />
+    <Compile Include="Utility\Helpers\AwaitableUI\WriteableBitmapExtensions.cs" />
     <Compile Include="Utility\Helpers\DoesFileExistHelper.cs" />
+    <Compile Include="Utility\Helpers\DownloadAndSaveHelper.cs" />
+    <Compile Include="Utility\Helpers\LoadBackers.cs" />
+    <Compile Include="Utility\Helpers\MathHelper.cs" />
+    <Compile Include="Utility\Helpers\MusicLibrary\ArtistInformationsHelper.cs" />
+    <Compile Include="Utility\Helpers\MusicLibrary\GetInformationsFromMusicFile.cs" />
+    <Compile Include="Utility\Helpers\PointersUtils.cs" />
     <Compile Include="Utility\Helpers\SerializationHelper.cs" />
     <Compile Include="Utility\Helpers\StoryboardExtensions.cs" />
     <Compile Include="Utility\Helpers\UIAnimationHelper.cs" />
+    <Compile Include="Utility\Helpers\UpdateTileHelper.cs" />
     <Compile Include="Utility\Helpers\VisualTreeHelperExtensions.cs" />
+    <Compile Include="Utility\Helpers\MusicLibrary\xboxmusic\Models\Albums.cs" />
+    <Compile Include="Utility\Helpers\MusicLibrary\xboxmusic\Models\Artists.cs" />
+    <Compile Include="Utility\Helpers\MusicLibrary\xboxmusic\Models\Contributor.cs" />
+    <Compile Include="Utility\Helpers\MusicLibrary\xboxmusic\Models\Error.cs" />
+    <Compile Include="Utility\Helpers\MusicLibrary\xboxmusic\Models\Music.cs" />
+    <Compile Include="Utility\Helpers\MusicLibrary\xboxmusic\Models\Tracks.cs" />
+    <Compile Include="Utility\Helpers\MusicLibrary\xboxmusic\MusicHelper.cs" />
+    <Compile Include="Utility\Helpers\MusicLibrary\xboxmusic\Settings\Culture.cs" />
+    <Compile Include="Utility\Helpers\MusicLibrary\xboxmusic\Settings\Extras.cs" />
+    <Compile Include="Utility\Helpers\MusicLibrary\xboxmusic\Settings\Filters.cs" />
+    <Compile Include="Utility\Helpers\MusicLibrary\xboxmusic\Settings\ImageMode.cs" />
     <Compile Include="Utility\Services\DesignTime\ThumbnailService.cs" />
     <Compile Include="Utility\Services\Interface\IThumbnailService.cs" />
     <Compile Include="Utility\Services\RunTime\HistoryService.cs" />
@@ -137,13 +171,19 @@
     <Compile Include="ViewModels\MainPage\RemovableLibraryViewModel.cs" />
     <Compile Include="ViewModels\MainPage\ThumbnailViewModel.cs" />
     <Compile Include="ViewModels\MainPage\ViewedVideoViewModel.cs" />
-    <Compile Include="ViewModels\PlayMusic\MusicPlayerViewModel.cs" />
-    <Compile Include="ViewModels\PlayMusic\TrackCollectionViewModel.cs" />
+    <Compile Include="ViewModels\MainPage\PlayMusic\MusicPlayerViewModel.cs" />
+    <Compile Include="ViewModels\MainPage\PlayMusic\TrackCollectionViewModel.cs" />
     <Compile Include="ViewModels\PlayVideo\PlayVideoViewModel.cs" />
     <Compile Include="Utility\IoC\ResolutionException.cs" />
     <Compile Include="Views\BasePage.cs" />
     <Compile Include="Views\Controls\AnimatedBackground.xaml.cs">
       <DependentUpon>AnimatedBackground.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\IndexingMusicLibrary.xaml.cs">
+      <DependentUpon>IndexingMusicLibrary.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\InputDialog\InputDialog.xaml.cs">
+      <DependentUpon>InputDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Controls\MainPage\LastViewed.xaml.cs">
       <DependentUpon>LastViewed.xaml</DependentUpon>
@@ -166,12 +206,33 @@
     <Compile Include="Views\Controls\MainPage\Welcome.xaml.cs">
       <DependentUpon>Welcome.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Controls\MinimizedAppBar.xaml.cs">
+      <DependentUpon>MinimizedAppBar.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Controls\MiniPlayer.xaml.cs">
       <DependentUpon>MiniPlayer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\MusicPage\AlbumFlyout.xaml.cs">
+      <DependentUpon>AlbumFlyout.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\MusicPage\VerticalAlbumItemTemplate.xaml.cs">
+      <DependentUpon>VerticalAlbumItemTemplate.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\NothingToSeeHere.xaml.cs">
+      <DependentUpon>NothingToSeeHere.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\RemovableStorage\PlugARemovableStorage.xaml.cs">
+      <DependentUpon>PlugARemovableStorage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\SearchFlyout.xaml.cs">
+      <DependentUpon>SearchFlyout.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Controls\VariableSizedItemsGridView.cs" />
     <Compile Include="Views\Controls\WrapPanelControl\OrientedSize.cs" />
     <Compile Include="Views\Controls\WrapPanelControl\WrapPanel.cs" />
+    <Compile Include="Views\DLNAPage.xaml.cs">
+      <DependentUpon>DLNAPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -182,17 +243,29 @@
     <Compile Include="Views\PlayVideo.xaml.cs">
       <DependentUpon>PlayVideo.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\RemovableStoragePage.xaml.cs">
+      <DependentUpon>RemovableStoragePage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\RootPage.xaml.cs">
       <DependentUpon>RootPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SpecialThanks.xaml.cs">
+      <DependentUpon>SpecialThanks.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
+    <None Include="backers.csv" />
     <None Include="Common\ReadMe.txt" />
+    <Content Include="Assets\background.jpg" />
+    <Content Include="Assets\GreyPylon\280x156.jpg" />
+    <Content Include="Assets\GreyPylon\50x50.jpg" />
+    <Content Include="Assets\Wide310x150Logo.scale-100.png" />
     <Content Include="plugins\audio_output\libxaudio2_winrt_plugin.dll" />
     <Content Include="segoeui.ttf" />
+    <None Include="packages.config" />
     <PRIResource Include="Strings\en-US\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
@@ -510,6 +583,9 @@
     <Content Include="..\..\vlc\plugins\stream_filter\libsmooth_plugin.dll">
       <Link>plugins\stream_filter\libsmooth_plugin.dll</Link>
     </Content>
+    <Content Include="..\..\vlc\plugins\text_renderer\libfreetype_plugin.dll">
+      <Link>plugins\text_renderer\libfreetype_plugin.dll</Link>
+    </Content>
     <Content Include="..\..\vlc\plugins\video_chroma\libgrey_yuv_plugin.dll">
       <Link>plugins\video_chroma\libgrey_yuv_plugin.dll</Link>
     </Content>
@@ -702,6 +778,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Controls\IndexingMusicLibrary.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\InputDialog\InputDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Controls\MainPage\LastViewed.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -730,7 +814,35 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Controls\MinimizedAppBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Controls\MiniPlayer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\MusicPage\AlbumFlyout.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\MusicPage\VerticalAlbumItemTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\NothingToSeeHere.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\RemovableStorage\PlugARemovableStorage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\SearchFlyout.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DLNAPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -746,7 +858,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\RemovableStoragePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\RootPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SpecialThanks.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -756,12 +876,17 @@
     <Folder Include="plugins\meta_engine\" />
     <Folder Include="plugins\packetizer\" />
     <Folder Include="plugins\services_discovery\" />
-    <Folder Include="plugins\text_renderer\" />
   </ItemGroup>
   <ItemGroup>
     <SDKReference Include="Microsoft.VCLibs, Version=11.0">
       <Name>Microsoft Visual C++ Runtime Package</Name>
     </SDKReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\netcore45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '11.0' ">
     <VisualStudioVersion>11.0</VisualStudioVersion>

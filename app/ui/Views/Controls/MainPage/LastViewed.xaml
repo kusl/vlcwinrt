@@ -9,7 +9,8 @@
     xmlns:controls="using:VLC_WINRT.Views.Controls"
     mc:Ignorable="d"
     d:DesignHeight="768"
-    d:DesignWidth="550">
+    d:DesignWidth="550"
+    DataContext="{Binding Source={StaticResource Locator}, Path=MainPageVM}">
 
     <UserControl.Resources>
         <dataTemplateSelectors:MediaItemDataTemplateSelector WideMovieTemplate="{StaticResource WideMovieTemplate}"
@@ -21,53 +22,71 @@
                       VerticalScrollBarVisibility="Disabled"
                       HorizontalScrollMode="Auto"
                       HorizontalScrollBarVisibility="Auto"
-                      VerticalContentAlignment="Center"
+                      VerticalContentAlignment="Stretch"
                       HorizontalContentAlignment="Center"
                       ZoomMode="Disabled">
-            <StackPanel Orientation="Horizontal" >
-                <local:Welcome Margin="50,0,0,0" />
-                <!--Visibility="{Binding WelcomeSectionVisible, Converter={StaticResource BooleanToVisibilityConverter}}"-->
-                <Grid Margin="40,0,0,0">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                <local:Welcome Margin="50,0,0,0" VerticalAlignment="Center" Visibility="{Binding LastViewedVM.LastViewedVM.Count, Converter={StaticResource CountToVisibilityConverter}}"/>
+                <Grid Margin="50,0,0,0" DataContext="{Binding LastViewedVM}" Visibility="{Binding LastViewedVM.Count, Converter={StaticResource NegatedCountToVisibilityConverter}}">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="50"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="last videos" Foreground="#e67e22" Margin="0,20" FontSize="42" FontWeight="Light" />
-                    <controls:VariableSizedItemsGridView Grid.Row="1" ItemsSource="{Binding LastViewedVideoVM}" ItemTemplateSelector="{StaticResource MediaItemDataTemplateSelector}" >
-                        <GridView.ItemsPanel>
+                    <Button Margin="5,0,0,0" Grid.Row="0" Template="{StaticResource MainButtonStyle}">
+                        <TextBlock Style="{StaticResource VLCSubHeaderStyle}" >
+                                <Run Text="last viewed" />
+                                <Run Text=" " FontFamily="Segoe UI Symbol" />
+                        </TextBlock>
+                    </Button>
+                    <controls:VariableSizedItemsGridView Grid.Row="1" SelectionMode="None" ItemsSource="{Binding LastViewedVM}" ItemContainerStyle="{StaticResource GridViewItemContainerStyle}" ItemTemplateSelector="{StaticResource MediaItemDataTemplateSelector}" >
+                        <controls:VariableSizedItemsGridView.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <VariableSizedWrapGrid ItemHeight="172" ItemWidth="280" MaximumRowsOrColumns="2" />
+                                <VariableSizedWrapGrid VerticalChildrenAlignment="Top" ItemHeight="160" ItemWidth="265" MaximumRowsOrColumns="4" />
                             </ItemsPanelTemplate>
-                        </GridView.ItemsPanel>
+                        </controls:VariableSizedItemsGridView.ItemsPanel>
                     </controls:VariableSizedItemsGridView>
                 </Grid>
                 <Grid Margin="40,0,0,0">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="50"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="last music" Foreground="#e67e22" Margin="0,20" FontSize="42" FontWeight="Light" />
-                    <ListView Grid.Row="1" ItemsSource="{Binding LastViewedMusicVM}" >
-                        <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Style="{StaticResource PlayLittleAppBarButtonStyle}" Foreground="Black"/>
-                                    <TextBlock Margin="10,0,0,0" Foreground="Black">
-                                        <Run Text="{Binding Name}" FontSize="22"/>
-                                        <LineBreak />
-                                        <Run Text="{Binding ArtistName}"/>
-                                    </TextBlock>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                    <Button Margin="5,0,0,0" Command="{Binding GoToPanel}" CommandParameter="1" Grid.Row="0" Template="{StaticResource MainButtonStyle}">
+                        <TextBlock Style="{StaticResource VLCSubHeaderStyle}" >
+                                <Run Text="videos" />
+                                <Run Text="" FontFamily="Segoe UI Symbol" />
+                        </TextBlock>
+                    </Button>
+                    <controls:NothingToSeeHere Grid.Row="1" Visibility="{Binding VideoVM.HasNoMedia, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <controls:VariableSizedItemsGridView Grid.Row="1" SelectionMode="None" ItemsSource="{Binding VideoVM.MediaRandom}" ItemContainerStyle="{StaticResource GridViewItemContainerStyle}" ItemTemplateSelector="{StaticResource MediaItemDataTemplateSelector}" >
+                        <controls:VariableSizedItemsGridView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VariableSizedWrapGrid VerticalChildrenAlignment="Top" ItemHeight="160" ItemWidth="265" MaximumRowsOrColumns="4" />
+                            </ItemsPanelTemplate>
+                        </controls:VariableSizedItemsGridView.ItemsPanel>
+                    </controls:VariableSizedItemsGridView>
                 </Grid>
-                <Button Margin="5,0"
-                Style="{StaticResource TextButtonStyle}"
-                HorizontalAlignment="Right"
-                Command="{Binding ClearHistory}">
-                    <TextBlock x:Uid="Clear" Text="Clear"/>
-                </Button>
+                <Grid Margin="40,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Button Margin="5,0,0,0" Command="{Binding GoToPanel}" CommandParameter="2" Grid.Row="0" Template="{StaticResource MainButtonStyle}">
+                        <TextBlock Style="{StaticResource VLCSubHeaderStyle}" >
+                                <Run Text="music" />
+                                <Run Text="" FontFamily="Segoe UI Symbol" />
+                        </TextBlock>
+                    </Button>
+                    <controls:NothingToSeeHere Grid.Row="1" Visibility="{Binding MusicLibraryVm.RandomAlbums.Count, Converter={StaticResource CountToVisibilityConverter}}"/>
+                    <controls:VariableSizedItemsGridView Grid.Row="1" ItemTemplate="{StaticResource LittleSizedAlbumDataTemplate}" SelectionMode="None" IsItemClickEnabled="True" ItemContainerStyle="{StaticResource GridViewItemContainerStyle}" ItemsSource="{Binding MusicLibraryVm.RandomAlbums}" ItemClick="FavoriteAlbumItemClick" >
+                        <controls:VariableSizedItemsGridView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VariableSizedWrapGrid Orientation="Vertical" ItemHeight="160" ItemWidth="150" MaximumRowsOrColumns="6"/>
+                            </ItemsPanelTemplate>
+                        </controls:VariableSizedItemsGridView.ItemsPanel>
+                    </controls:VariableSizedItemsGridView>
+                </Grid>
             </StackPanel>
         </ScrollViewer>
     </Grid>

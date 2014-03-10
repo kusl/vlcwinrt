@@ -27,13 +27,16 @@ using namespace Windows::Media::Devices;
 using namespace Windows::UI::Xaml::Controls;
 
 namespace libVLCX {
-	class DirectXManger
-	{
-	public:
-		DirectXManger();
-		void CreateSwapPanel(SwapChainBackgroundPanel^ panel);
+    class DirectXManger
+    {
+    public:
+        DirectXManger();
+        void CreateSwapPanel(SwapChainBackgroundPanel^ panel);
+    private:
+        void CheckDXOperation(HRESULT hr, Platform::String^ message);
 
-		ComPtr<ID2D1DeviceContext> cp_d2dContext;
-		ComPtr<IDXGISwapChain1>    cp_swapChain;
-	};
+    public:
+        ComPtr<ID2D1DeviceContext> cp_d2dContext;
+        ComPtr<IDXGISwapChain1>    cp_swapChain;
+    };
 }

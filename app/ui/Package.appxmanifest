@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest">
-  <Identity Name="9519ba58-7ad6-4c4e-97ed-bfc2135a0d19" Publisher="CN=VideoLAN" Version="0.0.1.7" />
+  <Identity Name="9519ba58-7ad6-4c4e-97ed-bfc2135a0d19" Publisher="CN=VideoLAN" Version="0.0.2.0" />
   <Properties>
-    <DisplayName>VLC_WINRT</DisplayName>
+    <DisplayName>VLC for WinRT</DisplayName>
     <PublisherDisplayName>VideoLAN</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -28,13 +28,14 @@
               <FileType ContentType="video/mp4">.mp4</FileType>
               <FileType ContentType="audio/x-ms-wmv">.wmv</FileType>
               <FileType ContentType="application/ogg">.ogg</FileType>
+              <FileType ContentType="audio/mpeg">.mp3</FileType>
             </SupportedFileTypes>
           </FileTypeAssociation>
         </Extension>
       </Extensions>
-      <VisualElements DisplayName="VLC_WINRT" Logo="Assets\Logo.png" SmallLogo="Assets\SmallLogo.png" Description="VLC_WINRT" ForegroundText="light" BackgroundColor="#464646">
-        <DefaultTile ShowName="logoOnly" ShortName="VLC for WinRT" />
-        <SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#F09609" />
+      <VisualElements DisplayName="VLC for WinRT" Logo="Assets\Logo.png" SmallLogo="Assets\SmallLogo.png" Description="VLC_WINRT" ForegroundText="light" BackgroundColor="#e67e22">
+        <DefaultTile ShowName="logoOnly" ShortName="VLC for WinRT" WideLogo="Assets\Wide310x150Logo.png" />
+        <SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#e67e22" />
       </VisualElements>
     </Application>
   </Applications>

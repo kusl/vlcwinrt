@@ -1,7 +1,8 @@
 /*****************************************************************************
- * Copyright © 2013 VideoLAN
+ * Copyright © 2013-2014 VideoLAN
  *
  * Authors: Kellen Sunderland
+ *          Jean-Baptiste Kempf
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -22,60 +23,81 @@
 
 #include <vlc/vlc.h>
 #include "MMDeviceLocator.h"
-#include "DirectXManger.h"
-#include <exception>
+#include "DirectXManager.h"
 
-using namespace Microsoft::WRL;
-using namespace Windows::Media::Devices;
+#include <exception>
+#include <collection.h>
+
 using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::System::Threading;
 using namespace Windows::Foundation;
+using namespace Windows::Foundation::Collections;
 
 namespace libVLCX {
-	public delegate void MediaEndedHandler();
+    public delegate void MediaEndedHandler();
+
+    [Windows::Foundation::Metadata::WebHostHidden]
     public ref class Player sealed
     {
     public:
-		Player(SwapChainBackgroundPanel^ panel);
-		IAsyncAction^ Initialize();
-		void          Open(Platform::String^ mrl);
+        Player(SwapChainBackgroundPanel^ panel);
+        IAsyncAction^ Initialize();
+
+        void          Open(Platform::String^ mrl);
+
         void          Stop();
         void          Pause();
         void          Play();
-		void          Seek(float position);
-		float         GetPosition();
-		int64         GetLength();
-		int           GetSubtitleCount();
-		int           SetSubtitleTrack(int track);
-		virtual       ~Player();
-		void		  DetachEvent();
 
-	public:
-		event MediaEndedHandler^ MediaEnded;
+        void          Seek(float position);
+        float         GetPosition();
+        int64         GetLength();
+        int64         GetTime();
 
-	internal:
-		void MediaEndedCall();
+        float         GetRate();
+        int           SetRate(float rate);
+
+        int           GetSubtitleCount();
+        int           GetSubtitleDescription(IMap<int, Platform::String ^> ^tracks);
+        int           SetSubtitleTrack(int track);
+
+        int           GetAudioTracksCount();
+        int           GetAudioTracksDescription(IMap<int, Platform::String ^> ^tracks);
+        int           SetAudioTrack(int track);
+
+        int           SetVolume(int volume);
+        int           GetVolume();
+
+        virtual       ~Player();
+        void          DetachEvent();
+        void          UpdateSize(unsigned int x, unsigned int y);
+
+    public:
+        event MediaEndedHandler^ MediaEnded;
+
+    internal:
+        void MediaEndedCall();
 
     private:
-		void			         InitializeVLC();
+        void                     InitializeVLC();
         libvlc_instance_t        *p_instance;
         libvlc_media_player_t    *p_mp;
-		SwapChainBackgroundPanel ^p_panel;
-		DirectXManger            *p_dxManager;
-		float                    m_displayWidth;
-		float                    m_displayHeight;
-	};
+        SwapChainBackgroundPanel ^p_panel;
+        DirectXManger            *p_dxManager;
+        float                    m_displayWidth;
+        float                    m_displayHeight;
+    };
 
-	class PlayerPointerWrapper
-	{
-	public:
-		Player^ player;
+    class PlayerPointerWrapper
+    {
+    public:
+        Player^ player;
 
-	public:
-		PlayerPointerWrapper(Player^ player)
-		{
-			this->player = player;
-		}
-	};
+    public:
+        PlayerPointerWrapper(Player^ player)
+        {
+            this->player = player;
+        }
+    };
 }
 

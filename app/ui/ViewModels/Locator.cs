@@ -1,3 +1,12 @@
+/**********************************************************************
+ * VLC for WinRT
+ **********************************************************************
+ * Copyright © 2013-2014 VideoLAN and Authors
+ *
+ * Licensed under GPLv2+ and MPLv2
+ * Refer to COPYING file of the official project for license
+ **********************************************************************/
+
 /*
   In the View:
   DataContext="{Binding Source={StaticResource Locator}, Path=ViewModelName}"
@@ -7,7 +16,7 @@ using VLC_WINRT.Utility.IoC;
 using VLC_WINRT.Utility.Services.Interface;
 using VLC_WINRT.Utility.Services.RunTime;
 using VLC_WINRT.ViewModels.MainPage;
-using VLC_WINRT.ViewModels.PlayMusic;
+using VLC_WINRT.ViewModels.MainPage.PlayMusic;
 using VLC_WINRT.ViewModels.PlayVideo;
 
 namespace VLC_WINRT.ViewModels

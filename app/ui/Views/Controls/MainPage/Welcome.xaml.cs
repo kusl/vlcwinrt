@@ -1,18 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+﻿/**********************************************************************
+ * VLC for WinRT
+ **********************************************************************
+ * Copyright © 2013-2014 VideoLAN and Authors
+ *
+ * Licensed under GPLv2+ and MPLv2
+ * Refer to COPYING file of the official project for license
+ **********************************************************************/
+
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
+using VLC_WINRT.Utility.Services.RunTime;
 
 namespace VLC_WINRT.Views.Controls.MainPage
 {
@@ -21,6 +21,11 @@ namespace VLC_WINRT.Views.Controls.MainPage
         public Welcome()
         {
             this.InitializeComponent();
+        }
+
+        private void GoToSpecialThanksPage(object sender, RoutedEventArgs e)
+        {
+            NavigationService.NavigateTo(typeof(SpecialThanks));
         }
     }
 }

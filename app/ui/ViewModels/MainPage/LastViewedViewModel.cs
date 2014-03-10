@@ -1,4 +1,13 @@
-﻿using System;
+﻿/**********************************************************************
+ * VLC for WinRT
+ **********************************************************************
+ * Copyright © 2013-2014 VideoLAN and Authors
+ *
+ * Licensed under GPLv2+ and MPLv2
+ * Refer to COPYING file of the official project for license
+ **********************************************************************/
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -17,9 +26,7 @@ namespace VLC_WINRT.ViewModels.MainPage
         private readonly HistoryService _historyService;
         private ClearHistoryCommand _clearHistoryCommand;
         private bool _lastViewedSectionVisible;
-        private ViewedVideoViewModel _lastViewedVM;
-        private ViewedVideoViewModel _secondLastViewedVM;
-        private ViewedVideoViewModel _thirdLastViewedVM;
+        private List<ViewedVideoViewModel> _lastViewedVideos;
         private bool _welcomeSectionVisible;
 
         public LastViewedViewModel()
@@ -32,9 +39,8 @@ namespace VLC_WINRT.ViewModels.MainPage
             }
             else
             {
-                WelcomeSectionVisibile = true;
+                WelcomeSectionVisible = true;
             }
-
             _clearHistoryCommand = new ClearHistoryCommand();
             _historyService.HistoryUpdated += UpdateHistory;
             UpdateHistory();
@@ -54,23 +60,12 @@ namespace VLC_WINRT.ViewModels.MainPage
             ThreadPool.RunAsync(GetLastViewedMedia);
         }
 
-        public ViewedVideoViewModel LastViewedVM
+        public List<ViewedVideoViewModel> LastViewedVM
         {
-            get { return _lastViewedVM; }
-            set { SetProperty(ref _lastViewedVM, value); }
+            get { return _lastViewedVideos; }
+            set { SetProperty(ref _lastViewedVideos, value); }
         }
 
-        public ViewedVideoViewModel SecondLastViewedVM
-        {
-            get { return _secondLastViewedVM; }
-            set { SetProperty(ref _secondLastViewedVM, value); }
-        }
-
-        public ViewedVideoViewModel ThirdLastViewedVM
-        {
-            get { return _thirdLastViewedVM; }
-            set { SetProperty(ref _thirdLastViewedVM, value); }
-        }
 
         public ClearHistoryCommand ClearHistory
         {
@@ -78,7 +73,7 @@ namespace VLC_WINRT.ViewModels.MainPage
             set { SetProperty(ref _clearHistoryCommand, value); }
         }
 
-        public bool WelcomeSectionVisibile
+        public bool WelcomeSectionVisible
         {
             get { return _welcomeSectionVisible; }
             set { SetProperty(ref _welcomeSectionVisible, value); }
@@ -90,42 +85,41 @@ namespace VLC_WINRT.ViewModels.MainPage
             set { SetProperty(ref _lastViewedSectionVisible, value); }
         }
 
+
         private async void GetLastViewedMedia(IAsyncAction operation)
         {
             var viewedMedia = await GetRecentMedia();
 
             DispatchHelper.Invoke(() =>
             {
-                if (viewedMedia.Count > 0)
-                    LastViewedVM = viewedMedia[0];
-                if (viewedMedia.Count > 1)
-                    SecondLastViewedVM = viewedMedia[1];
-                if (viewedMedia.Count > 2)
-                    ThirdLastViewedVM = viewedMedia[2];
+                LastViewedVM = viewedMedia;
             });
         }
 
         private async Task<List<ViewedVideoViewModel>> GetRecentMedia()
         {
             var viewedVideos = new List<ViewedVideoViewModel>();
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 4; i++)
             {
-                try
+                if (!_historyService.IsAudioAtPosition(i))
                 {
-                    string token = _historyService.GetTokenAtPosition(i);
-                    StorageFile file = null;
-                    if (!string.IsNullOrEmpty(token))
+                    try
                     {
-                        file = await _historyService.RetrieveFile(token);
-                    }
-                    if (file == null) continue;
+                        string token = _historyService.GetTokenAtPosition(i);
+                        StorageFile file = null;
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            file = await _historyService.RetrieveFile(token);
+                        }
+                        if (file == null) continue;
 
-                    viewedVideos.Add(new ViewedVideoViewModel(token, file));
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("Couldn't load file from history, we may no longer have acces to it.");
-                    Debug.WriteLine(ex.ToString());
+                        viewedVideos.Add(new ViewedVideoViewModel(token, file));
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine("Couldn't load file from history, we may no longer have acces to it.");
+                        Debug.WriteLine(ex.ToString());
+                    }
                 }
             }
             return viewedVideos;

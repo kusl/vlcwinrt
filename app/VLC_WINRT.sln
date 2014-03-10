@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VLC_WINRT", "UI\VLC_WINRT.csproj", "{746E8FC5-D67B-4ED3-89EC-757515B18CB5}"
 EndProject
@@ -145,10 +145,8 @@ Global
 		{1E7456C4-4D13-4266-88A7-92500625B199}.Release|ARM.Deploy.0 = Release|ARM
 		{1E7456C4-4D13-4266-88A7-92500625B199}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{1E7456C4-4D13-4266-88A7-92500625B199}.Release|Mixed Platforms.Build.0 = Release|x86
-		{1E7456C4-4D13-4266-88A7-92500625B199}.Release|Mixed Platforms.Deploy.0 = Release|x86
 		{1E7456C4-4D13-4266-88A7-92500625B199}.Release|Win32.ActiveCfg = Release|x86
 		{1E7456C4-4D13-4266-88A7-92500625B199}.Release|Win32.Build.0 = Release|x86
-		{1E7456C4-4D13-4266-88A7-92500625B199}.Release|Win32.Deploy.0 = Release|x86
 		{1E7456C4-4D13-4266-88A7-92500625B199}.Release|x64.ActiveCfg = Release|x86
 		{1E7456C4-4D13-4266-88A7-92500625B199}.Release|x86.ActiveCfg = Release|x86
 		{1E7456C4-4D13-4266-88A7-92500625B199}.Release|x86.Build.0 = Release|x86

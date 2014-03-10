@@ -1,4 +1,13 @@
-﻿using VLC_WINRT.Common;
+﻿/**********************************************************************
+ * VLC for WinRT
+ **********************************************************************
+ * Copyright © 2013-2014 VideoLAN and Authors
+ *
+ * Licensed under GPLv2+ and MPLv2
+ * Refer to COPYING file of the official project for license
+ **********************************************************************/
+
+using VLC_WINRT.Common;
 using VLC_WINRT.Utility.Services.RunTime;
 using VLC_WINRT.ViewModels;
 using VLC_WINRT.ViewModels.MainPage;
@@ -13,10 +22,8 @@ namespace VLC_WINRT.Utility.Commands
             LastViewedViewModel lastViewedVM = Locator.MainPageVM.LastViewedVM;
             historyService.Clear();
             lastViewedVM.LastViewedVM = null;
-            lastViewedVM.SecondLastViewedVM = null;
-            lastViewedVM.ThirdLastViewedVM = null;
             lastViewedVM.LastViewedSectionVisible = false;
-            lastViewedVM.WelcomeSectionVisibile = true;
+            lastViewedVM.WelcomeSectionVisible = true;
 
         }
     }
