@@ -29,14 +29,14 @@ Thumbnailer::Thumbnailer()
         "-I", "dummy",            // Only use options needed for snapshots
         "--vout", "dummy",
         "--no-osd",
-        "--verbose=2",
+        "--verbose=5",
         "--no-video-title-show",
         "--no-stats",
         "--no-audio"
     };
     p_instance = libvlc_new(sizeof(argv) / sizeof(*argv), argv);
     if (!p_instance) {
-        throw new std::exception("Could not initialise libvlc!", 1);
+        throw ref new Platform::Exception(-1,"Could not initialise libvlc!");
         return;
     }
 }
@@ -62,12 +62,12 @@ void Thumbnailer::TakeScreenshot(Platform::String^ mrl, int width, int height)
 
         if (mp)
         {
-            int result = libvlc_video_take_snapshot(mp, 1, "output.bmp" , width, height);
+            int result = libvlc_video_take_snapshot(mp, 1, "C:\\Users\\Kellen\\AppData\\Local\\Packages\\9519ba58-7ad6-4c4e-97ed-bfc2135a0d19_hj88em4th0swa\\LocalState\\vlc\\output.bmp" , 200, 50);
             libvlc_media_player_release(mp);
         }
     }
 
-    delete[](mrl);
+    delete[](mrl_str);
     //delete[](localPath);
 }
 

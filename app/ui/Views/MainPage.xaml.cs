@@ -14,7 +14,7 @@ using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-using VLC_WINRT.Utility.Commands;
+using libVLCX;
 using VLC_WINRT.Utility.Helpers;
 using VLC_WINRT.Utility.Services.RunTime;
 using VLC_WINRT.ViewModels;
@@ -43,6 +43,12 @@ namespace VLC_WINRT.Views
                     UIAnimationHelper.FadeOut(SectionsGrid.Children[i]);
                 }
                 FadeInPage.Begin();
+
+                //Temporary thumbnailer test code
+                Thumbnailer nailer = new Thumbnailer();
+                HistoryService hs = new HistoryService();
+                var token = hs.GetTokenAtPosition(0);
+                nailer.TakeScreenshot(@"winrt://" + token, 1024, 768);
             };
             NavigationCacheMode = NavigationCacheMode.Enabled;
         }

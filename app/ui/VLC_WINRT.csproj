@@ -872,6 +872,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="plugins\access_output\" />
     <Folder Include="plugins\lua\" />
     <Folder Include="plugins\meta_engine\" />
     <Folder Include="plugins\packetizer\" />
